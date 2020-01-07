@@ -6,6 +6,10 @@ import (
 	"github.com/wanabe/avroturf-go/avro"
 )
 
+type decodeTestStruct struct {
+	Str string `avro:"str"`
+}
+
 func TestDecodeInt(t *testing.T) {
 	decoder := avro.Decoder{Buffer: []byte{}}
 	_, err := decoder.DecodeInt()
@@ -102,5 +106,21 @@ func TestDecodeString(t *testing.T) {
 	}
 	if decoder.Offset != len(decoder.Buffer) {
 		t.Errorf("expected %d but got %d", len(decoder.Buffer), decoder.Offset)
+	}
+}
+
+func TestUnmarshal(t *testing.T) {
+	schema := &avro.Schema{
+		Type: avro.String,
+		Name: "str",
+	}
+	obj := decodeTestStruct{}
+	buf := []byte{6, 'a', 'b', 'c', 'd'}
+	err := avro.Unmarshal(buf, &obj, schema)
+	if err != nil {
+		t.Error(err)
+	}
+	if obj.Str != "abc" {
+		t.Errorf(`expected "abc" but got "%s"`, obj.Str)
 	}
 }

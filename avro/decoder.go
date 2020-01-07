@@ -10,6 +10,25 @@ type Decoder struct {
 	Offset int
 }
 
+func Unmarshal(buf []byte, msg interface{}, w *Schema) error {
+	d := &Decoder{Buffer: buf}
+	return d.Unmarshal(msg, w)
+}
+
+func (d *Decoder) Unmarshal(msg interface{}, w *Schema) error {
+	switch w.Type {
+	// TODO: support other types
+	case String:
+		if s, err := d.DecodeString(); err != nil {
+			return err
+		} else if err := putString(msg, w.Name, s); err != nil {
+			return err
+		}
+		return nil
+	}
+	return fmt.Errorf("unkown type: %d", w.Type)
+}
+
 func (d *Decoder) DecodeString() (string, error) {
 	size, err := d.DecodeInt()
 	right := d.Offset + size
