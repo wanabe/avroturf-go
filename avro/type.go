@@ -1,6 +1,7 @@
 package avro
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 )
@@ -9,6 +10,7 @@ type Type uint
 
 const (
 	Null Type = iota + 1
+	Record
 	Boolean
 	Int
 	Long
@@ -17,6 +19,58 @@ const (
 	Bytes
 	String
 )
+
+func (t Type) String() string {
+	switch t {
+	case Null:
+		return "null"
+	case Record:
+		return "record"
+	case Boolean:
+		return "boolean"
+	case Int:
+		return "int"
+	case Long:
+		return "long"
+	case Float:
+		return "float"
+	case Double:
+		return "double"
+	case Bytes:
+		return "bytes"
+	case String:
+		return "string"
+	}
+	return "unkown"
+}
+
+func (t *Type) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("unexpected data")
+	}
+	switch s {
+	case "null":
+		*t = Null
+	case "record":
+		*t = Record
+	case "boolean":
+		*t = Boolean
+	case "int":
+		*t = Int
+	case "long":
+		*t = Long
+	case "float":
+		*t = Float
+	case "double":
+		*t = Double
+	case "bytes":
+		*t = Bytes
+	case "string":
+		*t = String
+	}
+	return nil
+}
 
 var typeNameIndexMap map[reflect.Type]map[string]int
 
