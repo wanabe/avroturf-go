@@ -54,11 +54,11 @@ func TestFetchSchema(t *testing.T) {
 	}
 	expectedSchema := &avro.Schema{
 		Name: "TestRecord",
-		Type: avro.Record,
+		Type: avro.Type{Primitive: avro.Record},
 		Fields: []avro.Schema{
 			avro.Schema{
 				Name: "Str1",
-				Type: avro.String,
+				Type: avro.Type{Primitive: avro.String},
 			},
 		},
 	}

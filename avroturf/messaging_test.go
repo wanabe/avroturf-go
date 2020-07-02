@@ -38,7 +38,10 @@ func TestDecode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	schema := &avro.Schema{Type: avro.String, Name: "str"}
+	schema := &avro.Schema{
+		Type: avro.Type{Primitive: avro.String},
+		Name: "str",
+	}
 
 	registry := mock_avroturf.NewMockSchemaRegistryInterface(ctrl)
 	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)

@@ -16,7 +16,7 @@ func Unmarshal(buf []byte, msg interface{}, w *Schema) error {
 }
 
 func (d *Decoder) Unmarshal(msg interface{}, w *Schema) error {
-	switch w.Type {
+	switch w.Type.Primitive {
 	// TODO: support other types
 	case String:
 		if s, err := d.DecodeString(); err != nil {
@@ -26,7 +26,7 @@ func (d *Decoder) Unmarshal(msg interface{}, w *Schema) error {
 		}
 		return nil
 	}
-	return fmt.Errorf("unkown type: %d", w.Type)
+	return fmt.Errorf("unkown type: %s", w.Type.String())
 }
 
 func (d *Decoder) DecodeString() (string, error) {

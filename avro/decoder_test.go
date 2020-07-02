@@ -111,7 +111,7 @@ func TestDecodeString(t *testing.T) {
 
 func TestUnmarshal(t *testing.T) {
 	schema := &avro.Schema{
-		Type: avro.String,
+		Type: avro.Type{Primitive: avro.String},
 		Name: "str",
 	}
 	obj := decodeTestStruct{}

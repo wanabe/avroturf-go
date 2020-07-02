@@ -6,10 +6,16 @@ import (
 	"reflect"
 )
 
-type Type uint
+type primitiveType uint
+type Type struct {
+	Primitive    primitiveType
+	Logical      string
+	UnionedTypes []Type
+}
 
 const (
-	Null Type = iota + 1
+	Unknown primitiveType = iota
+	Null
 	Record
 	Boolean
 	Int
@@ -18,10 +24,11 @@ const (
 	Double
 	Bytes
 	String
+	Union
 )
 
 func (t Type) String() string {
-	switch t {
+	switch t.Primitive {
 	case Null:
 		return "null"
 	case Record:
@@ -45,31 +52,62 @@ func (t Type) String() string {
 }
 
 func (t *Type) UnmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return fmt.Errorf("unexpected data")
+	var obj interface{}
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return err
 	}
+	return t.unmarshalObject(obj)
+}
+
+func (t *Type) unmarshalObject(obj interface{}) error {
+	if s, ok := obj.(string); ok {
+		t.Primitive = typeNameToPrimitive(s)
+		return nil
+	} else if m, ok := obj.(map[string]interface{}); ok {
+		// TODO: support logical type attributes
+		s, ok := m["type"].(string)
+		s2, ok2 := m["logicalType"].(string)
+		if ok && ok2 {
+			t.Primitive = typeNameToPrimitive(s)
+			t.Logical = s2
+			return nil
+		}
+	} else if a, ok := obj.([]interface{}); ok {
+		u := make([]Type, len(a))
+		for i, o := range a {
+			if err := u[i].unmarshalObject(o); err != nil {
+				return err
+			}
+		}
+		t.Primitive = Union
+		t.UnionedTypes = u
+		return nil
+	}
+	return fmt.Errorf("unexpected type: %s", obj)
+}
+
+func typeNameToPrimitive(s string) primitiveType {
 	switch s {
 	case "null":
-		*t = Null
+		return Null
 	case "record":
-		*t = Record
+		return Record
 	case "boolean":
-		*t = Boolean
+		return Boolean
 	case "int":
-		*t = Int
+		return Int
 	case "long":
-		*t = Long
+		return Long
 	case "float":
-		*t = Float
+		return Float
 	case "double":
-		*t = Double
+		return Double
 	case "bytes":
-		*t = Bytes
+		return Bytes
 	case "string":
-		*t = String
+		return String
 	}
-	return nil
+	return Unknown
 }
 
 var typeNameIndexMap map[reflect.Type]map[string]int
