@@ -39,8 +39,13 @@ func TestDecode(t *testing.T) {
 	defer ctrl.Finish()
 
 	schema := &avro.Schema{
-		Type: avro.Type{Primitive: avro.String},
-		Name: "str",
+		Type: avro.Type{Primitive: avro.Record},
+		Fields: []avro.Schema{
+			{
+				Type: avro.Type{Primitive: avro.String},
+				Name: "str",
+			},
+		},
 	}
 
 	registry := mock_avroturf.NewMockSchemaRegistryInterface(ctrl)

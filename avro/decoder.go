@@ -16,6 +16,18 @@ func Unmarshal(buf []byte, msg interface{}, w *Schema) error {
 }
 
 func (d *Decoder) Unmarshal(msg interface{}, w *Schema) error {
+	if w.Type.Primitive != Record {
+		return fmt.Errorf("unexpected schema type: %s", w.Type.String())
+	}
+	for _, s := range w.Fields {
+		if err := d.unmarshalField(msg, &s); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (d *Decoder) unmarshalField(msg interface{}, w *Schema) error {
 	switch w.Type.Primitive {
 	// TODO: support other types
 	case String:
