@@ -24,6 +24,7 @@ func NewMessaging(n string, p string, u string) *Messaging {
 			Upstream: &ConfluentSchemaRegistry{
 				RegistryURL: u,
 			},
+			Cache: &InMemoryCache{},
 		},
 		SchemasByID: make(map[uint32]*avro.Schema),
 	}
@@ -39,7 +40,11 @@ func (m *Messaging) Decode(data []byte, obj interface{}, schemaName string) erro
 	schemaID := binary.BigEndian.Uint32(data[1:5])
 	writersSchema, hit := m.SchemasByID[schemaID]
 	if !hit {
-		writersSchema = m.Registry.FetchSchema(schemaID)
+		schema, err := m.Registry.FetchSchema(schemaID)
+		if err != nil {
+			return err
+		}
+		writersSchema = schema
 		m.SchemasByID[schemaID] = writersSchema
 	}
 	return avro.Unmarshal(data[5:], obj, writersSchema)

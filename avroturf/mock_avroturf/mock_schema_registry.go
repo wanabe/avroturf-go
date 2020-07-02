@@ -34,11 +34,12 @@ func (m *MockSchemaRegistryInterface) EXPECT() *MockSchemaRegistryInterfaceMockR
 }
 
 // FetchSchema mocks base method
-func (m *MockSchemaRegistryInterface) FetchSchema(arg0 uint32) *avro.Schema {
+func (m *MockSchemaRegistryInterface) FetchSchema(arg0 uint32) (*avro.Schema, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchSchema", arg0)
 	ret0, _ := ret[0].(*avro.Schema)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FetchSchema indicates an expected call of FetchSchema

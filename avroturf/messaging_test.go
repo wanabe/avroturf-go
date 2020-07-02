@@ -41,7 +41,7 @@ func TestDecode(t *testing.T) {
 	schema := &avro.Schema{Type: avro.String, Name: "str"}
 
 	registry := mock_avroturf.NewMockSchemaRegistryInterface(ctrl)
-	registry.EXPECT().FetchSchema(uint32(123)).Return(schema)
+	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
 
 	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]*avro.Schema)}
 	obj := record{}
