@@ -57,3 +57,20 @@ func TestDecode(t *testing.T) {
 		t.Errorf("expected \"%s\" but got \"%s\"", "hoge", obj.Str)
 	}
 }
+
+func TestFailDecode(t *testing.T) {
+	messaging := &avroturf.Messaging{}
+	obj := record{}
+
+	b := []byte{0, 0, 0, 0}
+	err := messaging.Decode(b, &obj, "test-name")
+	if err == nil || err.Error() != "data too short: 4 byte(s)" {
+		t.Errorf("unexpected error: %+v", err)
+	}
+
+	b = []byte{11, 0, 0, 0, 0}
+	err = messaging.Decode(b, &obj, "test-name")
+	if err == nil || err.Error() != "Expected data to begin with a magic byte, got `11`" {
+		t.Errorf("unexpected error: %+v", err)
+	}
+}

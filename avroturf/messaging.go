@@ -32,6 +32,9 @@ func NewMessaging(n string, p string, u string) *Messaging {
 
 func (m *Messaging) Decode(data []byte, obj interface{}, schemaName string) error {
 	// TODO: get and use readerSchema
+	if len(data) < 5 {
+		return fmt.Errorf("data too short: %d byte(s)", len(data))
+	}
 	magicByte := data[0]
 	if magicByte != byte(0) {
 		return fmt.Errorf("Expected data to begin with a magic byte, got `%d`", magicByte)
