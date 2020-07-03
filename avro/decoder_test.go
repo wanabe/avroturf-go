@@ -1,13 +1,19 @@
 package avro_test
 
 import (
+	"database/sql"
+	"reflect"
 	"testing"
 
 	"github.com/wanabe/avroturf-go/avro"
 )
 
 type decodeTestStruct struct {
-	Str string `avro:"str"`
+	Str  string        `avro:"str"`
+	Num1 int32         `avro:"num1"`
+	Num2 int64         `avro:"num2"`
+	Num3 sql.NullInt32 `avro:"num3"`
+	Num4 sql.NullInt64 `avro:"num4"`
 }
 
 func TestDecodeInt(t *testing.T) {
@@ -127,5 +133,83 @@ func TestUnmarshal(t *testing.T) {
 	}
 	if obj.Str != "abc" {
 		t.Errorf(`expected "abc" but got "%s"`, obj.Str)
+	}
+
+	schema = &avro.Schema{
+		Type: avro.Type{Primitive: avro.Record},
+		Fields: []avro.Schema{
+			{
+				Type: avro.Type{Primitive: avro.Int},
+				Name: "num1",
+			},
+			{
+				Type: avro.Type{Primitive: avro.Long},
+				Name: "num2",
+			},
+			{
+				Type: avro.Type{
+					Primitive: avro.Union,
+					UnionedTypes: []avro.Type{
+						{Primitive: avro.Null},
+						{Primitive: avro.Int},
+					},
+				},
+				Name: "num3",
+			},
+			{
+				Type: avro.Type{
+					Primitive: avro.Union,
+					UnionedTypes: []avro.Type{
+						{Primitive: avro.Null},
+						{Primitive: avro.Long},
+					},
+				},
+				Name: "num4",
+			},
+		},
+	}
+
+	buf = []byte{
+		2, // num1
+		8, // num2
+		0, // schema of num3,
+		2, // schema of num4,
+		4, // num4
+	}
+	obj = decodeTestStruct{}
+	err = avro.Unmarshal(buf, &obj, schema)
+	if err != nil {
+		t.Error(err)
+	}
+	expected := decodeTestStruct{
+		Num1: 1,
+		Num2: 4,
+		Num3: sql.NullInt32{},
+		Num4: sql.NullInt64{Int64: 2, Valid: true},
+	}
+	if !reflect.DeepEqual(expected, obj) {
+		t.Errorf(`expected %+v but got %+v`, expected, obj)
+	}
+
+	buf = []byte{
+		0x81, 0x80, 0x1, // num1
+		11, // num2
+		2,  // schema of num3,
+		5,  // num3
+		0,  // schema of num4,
+	}
+	obj = decodeTestStruct{}
+	err = avro.Unmarshal(buf, &obj, schema)
+	if err != nil {
+		t.Error(err)
+	}
+	expected = decodeTestStruct{
+		Num1: -8193,
+		Num2: -6,
+		Num3: sql.NullInt32{Int32: -3, Valid: true},
+		Num4: sql.NullInt64{},
+	}
+	if !reflect.DeepEqual(expected, obj) {
+		t.Errorf(`expected %+v but got %+v`, expected, obj)
 	}
 }
