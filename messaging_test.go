@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"github.com/hamba/avro"
-	"github.com/wanabe/avroturf-go/avroturf"
-	"github.com/wanabe/avroturf-go/avroturf/mock_avroturf"
+	"github.com/wanabe/avroturf-go"
+	"github.com/wanabe/avroturf-go/mock_avroturf"
 )
 
 type record struct {

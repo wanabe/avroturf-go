@@ -7,7 +7,7 @@ type CachedConfluentSchemaRegistry struct {
 	Cache    *InMemoryCache
 }
 
-//go:generate mockgen -destination=mock_avroturf/mock_schema_registry.go github.com/wanabe/avroturf-go/avroturf SchemaRegistryInterface
+//go:generate mockgen -destination=mock_avroturf/mock_schema_registry.go -package mock_avroturf github.com/wanabe/avroturf-go SchemaRegistryInterface
 type SchemaRegistryInterface interface {
 	FetchSchema(schemaID uint32) (avro.Schema, error)
 }

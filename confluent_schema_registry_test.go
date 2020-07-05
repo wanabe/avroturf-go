@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/hamba/avro"
-	"github.com/wanabe/avroturf-go/avroturf"
+	"github.com/wanabe/avroturf-go"
 )
 
 type stubReadCloser struct {
