@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/wanabe/avroturf-go/avro"
+	"github.com/hamba/avro"
 	"github.com/wanabe/avroturf-go/avroturf"
 	"github.com/wanabe/avroturf-go/avroturf/mock_avroturf"
 )
@@ -38,25 +38,31 @@ func TestDecode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	schema := &avro.Schema{
-		Type: avro.Type{Primitive: avro.Record},
-		Fields: []avro.Schema{
-			{
-				Type: avro.Type{Primitive: avro.String},
-				Name: "str",
-			},
-		},
+	schema, err := avro.Parse(`
+		{
+			"type": "record",
+			"name": "TestSchemaRoot",
+			"fields": [
+				{
+					"type": "string",
+					"name": "str"
+				}
+			]
+		}
+	`)
+	if err != nil {
+		t.Errorf("unexpected err: %v", err)
 	}
 
 	registry := mock_avroturf.NewMockSchemaRegistryInterface(ctrl)
 	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
 
-	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]*avro.Schema)}
+	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
 	obj := record{}
 	b := []byte{0, 0, 0, 0, 123, 8}
 	b = append(b, "hoge"...)
 
-	err := messaging.Decode(b, &obj, "test-name")
+	err = messaging.Decode(b, &obj, "test-name")
 	if err != nil {
 		t.Errorf("unexpected err: %v", err)
 		return

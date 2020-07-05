@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wanabe/avroturf-go/avro"
+	"github.com/hamba/avro"
 	"github.com/wanabe/avroturf-go/avroturf"
 )
 
@@ -52,15 +52,20 @@ func TestFetchSchema(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	expectedSchema := &avro.Schema{
-		Name: "TestRecord",
-		Type: avro.Type{Primitive: avro.Record},
-		Fields: []avro.Schema{
-			avro.Schema{
-				Name: "Str1",
-				Type: avro.Type{Primitive: avro.String},
-			},
-		},
+	expectedSchema, err := avro.Parse(`
+		{
+			"type": "record",
+			"name": "TestRecord",
+			"fields": [
+				{
+					"type": "string",
+					"name": "Str1"
+				}
+			]
+		}
+	`)
+	if err != nil {
+		t.Error(err)
 	}
 	if !reflect.DeepEqual(s, expectedSchema) {
 		t.Errorf("expected %+v but got %+v", expectedSchema, s)

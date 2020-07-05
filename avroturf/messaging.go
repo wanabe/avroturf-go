@@ -4,14 +4,14 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/wanabe/avroturf-go/avro"
+	"github.com/hamba/avro"
 )
 
 type Messaging struct {
 	NameSpace   string
 	SchemaStore *SchemaStore
 	Registry    SchemaRegistryInterface
-	SchemasByID map[uint32]*avro.Schema
+	SchemasByID map[uint32]avro.Schema
 }
 
 func NewMessaging(n string, p string, u string) *Messaging {
@@ -26,7 +26,7 @@ func NewMessaging(n string, p string, u string) *Messaging {
 			},
 			Cache: &InMemoryCache{},
 		},
-		SchemasByID: make(map[uint32]*avro.Schema),
+		SchemasByID: make(map[uint32]avro.Schema),
 	}
 }
 
@@ -50,5 +50,5 @@ func (m *Messaging) Decode(data []byte, obj interface{}, schemaName string) erro
 		writersSchema = schema
 		m.SchemasByID[schemaID] = writersSchema
 	}
-	return avro.Unmarshal(data[5:], obj, writersSchema)
+	return avro.Unmarshal(writersSchema, data[5:], obj)
 }

@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/wanabe/avroturf-go/avro"
+	"github.com/hamba/avro"
 )
 
 type ConfluentSchemaRegistry struct {
@@ -27,7 +27,7 @@ func init() {
 	HTTPClient = &http.Client{}
 }
 
-func (r *ConfluentSchemaRegistry) FetchSchema(schemaID uint32) (*avro.Schema, error) {
+func (r *ConfluentSchemaRegistry) FetchSchema(schemaID uint32) (avro.Schema, error) {
 	if Logger != nil {
 		Logger.Printf("Fetching schema with id %d\n", schemaID)
 	}
@@ -39,7 +39,7 @@ func (r *ConfluentSchemaRegistry) FetchSchema(schemaID uint32) (*avro.Schema, er
 	if !ok {
 		return nil, errors.New("unexpected schema-registry response")
 	}
-	return avro.ParseSchema(json)
+	return avro.Parse(json)
 }
 
 func (r *ConfluentSchemaRegistry) request(method string, p string) (map[string]interface{}, error) {

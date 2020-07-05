@@ -6,7 +6,7 @@ package mock_avroturf
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	avro "github.com/wanabe/avroturf-go/avro"
+	avro "github.com/hamba/avro"
 	reflect "reflect"
 )
 
@@ -34,10 +34,10 @@ func (m *MockSchemaRegistryInterface) EXPECT() *MockSchemaRegistryInterfaceMockR
 }
 
 // FetchSchema mocks base method
-func (m *MockSchemaRegistryInterface) FetchSchema(arg0 uint32) (*avro.Schema, error) {
+func (m *MockSchemaRegistryInterface) FetchSchema(arg0 uint32) (avro.Schema, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchSchema", arg0)
-	ret0, _ := ret[0].(*avro.Schema)
+	ret0, _ := ret[0].(avro.Schema)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
