@@ -14,15 +14,13 @@ type Messaging struct {
 	SchemasByID map[uint32]avro.Schema
 }
 
-func NewMessaging(n string, p string, u string) *Messaging {
+func NewMessaging(namespace string, path string, registryURL string) *Messaging {
 	return &Messaging{
-		NameSpace: n,
-		SchemaStore: &SchemaStore{
-			Path: p,
-		},
+		NameSpace:   namespace,
+		SchemaStore: NewSchemaStore(path),
 		Registry: &CachedConfluentSchemaRegistry{
 			Upstream: &ConfluentSchemaRegistry{
-				RegistryURL: u,
+				RegistryURL: registryURL,
 			},
 			Cache: &InMemoryCache{},
 		},
@@ -51,4 +49,12 @@ func (m *Messaging) Decode(data []byte, obj interface{}, schemaName string) erro
 		m.SchemasByID[schemaID] = writersSchema
 	}
 	return avro.Unmarshal(writersSchema, data[5:], obj)
+}
+
+func (m *Messaging) DecodeByLocalSchema(data []byte, obj interface{}, schemaName string, namespace string) error {
+	localSchema, err := m.SchemaStore.Find(schemaName, namespace)
+	if err != nil {
+		return err
+	}
+	return avro.Unmarshal(localSchema, data[5:], obj)
 }
