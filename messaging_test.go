@@ -64,7 +64,7 @@ func TestDecode(t *testing.T) {
 	b := []byte{0, 0, 0, 0, 123, 8}
 	b = append(b, "hoge"...)
 
-	err = messaging.Decode(b, &obj, "test-name")
+	err = messaging.Decode(b, &obj)
 	if err != nil {
 		t.Errorf("unexpected err: %v", err)
 		return
@@ -105,13 +105,13 @@ func TestFailDecode(t *testing.T) {
 	obj := record{}
 
 	b := []byte{0, 0, 0, 0}
-	err := messaging.Decode(b, &obj, "test-name")
+	err := messaging.Decode(b, &obj)
 	if err == nil || err.Error() != "data too short: 4 byte(s)" {
 		t.Errorf("unexpected error: %+v", err)
 	}
 
 	b = []byte{11, 0, 0, 0, 0}
-	err = messaging.Decode(b, &obj, "test-name")
+	err = messaging.Decode(b, &obj)
 	if err == nil || err.Error() != "Expected data to begin with a magic byte, got `11`" {
 		t.Errorf("unexpected error: %+v", err)
 	}

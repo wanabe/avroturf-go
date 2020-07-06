@@ -28,8 +28,7 @@ func NewMessaging(namespace string, path string, registryURL string) *Messaging 
 	}
 }
 
-func (m *Messaging) Decode(data []byte, obj interface{}, schemaName string) error {
-	// TODO: get and use readerSchema
+func (m *Messaging) Decode(data []byte, obj interface{}) error {
 	if len(data) < 5 {
 		return fmt.Errorf("data too short: %d byte(s)", len(data))
 	}
