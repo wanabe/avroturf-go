@@ -116,3 +116,80 @@ func TestFailDecode(t *testing.T) {
 		t.Errorf("unexpected error: %+v", err)
 	}
 }
+
+func TestGetSchema(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	schema, err := avro.Parse(`
+		{
+			"type": "record",
+			"name": "TestSchemaRoot",
+			"fields": [
+				{
+					"type": "string",
+					"name": "str"
+				}
+			]
+		}
+	`)
+	if err != nil {
+		t.Errorf("unexpected err: %v", err)
+	}
+
+	registry := mock_avroturf.NewMockSchemaRegistryInterface(ctrl)
+	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
+
+	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
+	b := []byte{0, 0, 0, 0, 123, 8}
+	b = append(b, "hoge"...)
+
+	s, err := messaging.GetSchema(b)
+	if err != nil {
+		t.Errorf("unexpected err: %v", err)
+		return
+	}
+	if s != schema {
+		t.Errorf("expected \"%v\" but got \"%v\"", schema, s)
+	}
+}
+
+func TestGetRecordSchema(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	schema, err := avro.Parse(`
+		{
+			"type": "record",
+			"name": "TestSchemaRoot",
+			"fields": [
+				{
+					"type": "string",
+					"name": "str"
+				}
+			]
+		}
+	`)
+	if err != nil {
+		t.Errorf("unexpected err: %v", err)
+	}
+
+	registry := mock_avroturf.NewMockSchemaRegistryInterface(ctrl)
+	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
+
+	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
+	b := []byte{0, 0, 0, 0, 123, 8}
+	b = append(b, "hoge"...)
+
+	s, err := messaging.GetRecordSchema(b)
+	if err != nil {
+		t.Errorf("unexpected err: %v", err)
+		return
+	}
+	if s != schema {
+		t.Errorf("expected %v but got %v", schema, s)
+	}
+	if s.Name() != "TestSchemaRoot" {
+		t.Errorf("expected \"TestSchemaRoot\" but got \"%s\"", s.Name())
+	}
+}
