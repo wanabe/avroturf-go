@@ -56,7 +56,7 @@ func TestDecode(t *testing.T) {
 		t.Errorf("unexpected err: %v", err)
 	}
 
-	registry := mock_avroturf.NewMockSchemaRegistryInterface(ctrl)
+	registry := mock_avroturf.NewMockSchemaRegistry(ctrl)
 	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
 
 	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
@@ -137,7 +137,7 @@ func TestGetSchema(t *testing.T) {
 		t.Errorf("unexpected err: %v", err)
 	}
 
-	registry := mock_avroturf.NewMockSchemaRegistryInterface(ctrl)
+	registry := mock_avroturf.NewMockSchemaRegistry(ctrl)
 	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
 
 	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
@@ -174,7 +174,7 @@ func TestGetRecordSchema(t *testing.T) {
 		t.Errorf("unexpected err: %v", err)
 	}
 
-	registry := mock_avroturf.NewMockSchemaRegistryInterface(ctrl)
+	registry := mock_avroturf.NewMockSchemaRegistry(ctrl)
 	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
 
 	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}

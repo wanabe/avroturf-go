@@ -10,7 +10,7 @@ import (
 type Messaging struct {
 	NameSpace   string
 	SchemaStore *SchemaStore
-	Registry    SchemaRegistryInterface
+	Registry    SchemaRegistry
 	SchemasByID map[uint32]avro.Schema
 }
 
