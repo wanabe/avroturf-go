@@ -3,6 +3,7 @@ package avroturf_test
 import (
 	"os"
 	"path"
+	"sync"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -152,6 +153,51 @@ func TestGetSchema(t *testing.T) {
 	if s != schema {
 		t.Errorf("expected \"%v\" but got \"%v\"", schema, s)
 	}
+}
+
+func TestGetSchemaIOnParallel(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	schema, err := avro.Parse(`
+		{
+			"type": "record",
+			"name": "TestSchemaRoot",
+			"fields": [
+				{
+					"type": "string",
+					"name": "str"
+				}
+			]
+		}
+	`)
+	if err != nil {
+		t.Errorf("unexpected err: %v", err)
+	}
+
+	registry := mock_avroturf.NewMockSchemaRegistry(ctrl)
+	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
+
+	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
+	b := []byte{0, 0, 0, 0, 123, 8}
+	b = append(b, "hoge"...)
+
+	var wg sync.WaitGroup
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			s, err := messaging.GetSchema(b)
+			if err != nil {
+				t.Errorf("unexpected err: %v", err)
+				return
+			}
+			if s != schema {
+				t.Errorf("expected \"%v\" but got \"%v\"", schema, s)
+			}
+		}(i)
+	}
+	wg.Wait()
 }
 
 func TestGetRecordSchema(t *testing.T) {

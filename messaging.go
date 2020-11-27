@@ -3,11 +3,13 @@ package avroturf
 import (
 	"encoding/binary"
 	"fmt"
+	"sync"
 
 	"github.com/hamba/avro"
 )
 
 type Messaging struct {
+	sync.Mutex
 	NameSpace   string
 	SchemaStore *SchemaStore
 	Registry    SchemaRegistry
@@ -38,6 +40,8 @@ func (m *Messaging) GetSchema(data []byte) (avro.Schema, error) {
 	}
 
 	schemaID := binary.BigEndian.Uint32(data[1:5])
+	m.Lock()
+	defer m.Unlock()
 	schema, hit := m.SchemasByID[schemaID]
 	if !hit {
 		s, err := m.Registry.FetchSchema(schemaID)
