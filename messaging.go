@@ -40,16 +40,19 @@ func (m *Messaging) GetSchema(data []byte) (avro.Schema, error) {
 	}
 
 	schemaID := binary.BigEndian.Uint32(data[1:5])
-	m.Lock()
-	defer m.Unlock()
 	schema, hit := m.SchemasByID[schemaID]
 	if !hit {
-		s, err := m.Registry.FetchSchema(schemaID)
-		if err != nil {
-			return nil, err
+		m.Lock()
+		defer m.Unlock()
+		schema, hit = m.SchemasByID[schemaID]
+		if !hit {
+			s, err := m.Registry.FetchSchema(schemaID)
+			if err != nil {
+				return nil, err
+			}
+			schema = s
+			m.SchemasByID[schemaID] = s
 		}
-		schema = s
-		m.SchemasByID[schemaID] = s
 	}
 	return schema, nil
 }
