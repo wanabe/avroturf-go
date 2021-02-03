@@ -1,6 +1,7 @@
 package avroturf_test
 
 import (
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
@@ -69,5 +70,54 @@ func TestFetchSchema(t *testing.T) {
 	}
 	if !reflect.DeepEqual(s, expectedSchema) {
 		t.Errorf("expected %+v but got %+v", expectedSchema, s)
+	}
+}
+
+func TestRegister(t *testing.T) {
+	avroturf.HTTPClient = &httpClientStub{
+		DoFunc: func(req *http.Request) (*http.Response, error) {
+			if expected := "http://schema-registry:8081/subjects/TestRecord/versions"; req.URL.String() != expected {
+				t.Errorf("expected '%s' but got '%s'", expected, req.URL)
+			}
+			reqBytes, err := ioutil.ReadAll(req.Body)
+			if err != nil {
+				t.Error(err)
+			}
+			if expected := `{"schema":"{\"name\":\"TestRecord\",\"type\":\"record\",\"fields\":[{\"name\":\"Str1\",\"type\":\"string\"}]}"}`; string(reqBytes) != expected {
+				t.Errorf("expected:\n  %#v but got:\n  %#v", expected, string(reqBytes))
+			}
+
+			body := `{"id":135}`
+			return &http.Response{
+				Body: &stubReadCloser{
+					body: []byte(body),
+				},
+			}, nil
+		},
+	}
+	r := &avroturf.ConfluentSchemaRegistry{
+		RegistryURL: "http://schema-registry:8081",
+	}
+	schema, err := avro.Parse(`
+		{
+			"type": "record",
+			"name": "TestRecord",
+			"fields": [
+				{
+					"type": "string",
+					"name": "Str1"
+				}
+			]
+		}
+	`)
+	if err != nil {
+		t.Error(err)
+	}
+	id, err := r.Register("TestRecord", schema)
+	if err != nil {
+		t.Error(err)
+	}
+	if id != 135 {
+		t.Errorf("expected %d but got %d", 135, id)
 	}
 }

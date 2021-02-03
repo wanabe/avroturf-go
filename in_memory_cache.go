@@ -14,3 +14,13 @@ func (*InMemoryCache) StoreSchemaByID(schemaID uint32, schema avro.Schema) avro.
 	// TODO: implement
 	return schema
 }
+
+func (*InMemoryCache) LookupBySchema(subject string, schema avro.Schema) uint32 {
+	// TODO: implement
+	return 0
+}
+
+func (*InMemoryCache) StoreBySchema(subject string, schema avro.Schema, schemaID uint32) uint32 {
+	// TODO: implement
+	return schemaID
+}

@@ -47,3 +47,18 @@ func (mr *MockSchemaRegistryMockRecorder) FetchSchema(arg0 interface{}) *gomock.
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchSchema", reflect.TypeOf((*MockSchemaRegistry)(nil).FetchSchema), arg0)
 }
+
+// Register mocks base method
+func (m *MockSchemaRegistry) Register(arg0 string, arg1 avro.Schema) (uint32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Register", arg0, arg1)
+	ret0, _ := ret[0].(uint32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Register indicates an expected call of Register
+func (mr *MockSchemaRegistryMockRecorder) Register(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockSchemaRegistry)(nil).Register), arg0, arg1)
+}
