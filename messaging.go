@@ -84,3 +84,47 @@ func (m *Messaging) GetRecordSchema(data []byte) (*avro.RecordSchema, error) {
 	}
 	return recordSchema, nil
 }
+
+func (m *Messaging) Encode(obj interface{}, subject string, schemaName string, namespace string) ([]byte, error) {
+	schemaID, schema, err := m.RegisterSchema(subject, schemaName, namespace)
+	if err != nil {
+		return nil, err
+	}
+	return encodeBySchemaAndId(obj, schemaID, schema)
+}
+
+func (m *Messaging) EncodeByLocalSchema(obj interface{}, schemaName string, namespace string, schemaID uint32) ([]byte, error) {
+	schema, err := m.SchemaStore.Find(schemaName, namespace)
+	if err != nil {
+		return nil, err
+	}
+	return encodeBySchemaAndId(obj, schemaID, schema)
+}
+
+func encodeBySchemaAndId(obj interface{}, schemaID uint32, schema avro.Schema) ([]byte, error) {
+	data, err := avro.Marshal(schema, obj)
+	if err != nil || len(data) == 0 {
+		return nil, err
+	}
+	data = append([]byte{0, 0, 0, 0, 0}, data...)
+	binary.BigEndian.PutUint32(data[1:5], schemaID)
+	return data, nil
+}
+
+func (m *Messaging) RegisterSchema(subject string, schemaName string, namespace string) (uint32, avro.Schema, error) {
+	schema, err := m.SchemaStore.Find(schemaName, namespace)
+	if err != nil {
+		return 0, nil, err
+	}
+	if subject == "" {
+		s, ok := schema.(avro.NamedSchema)
+		if ok {
+			subject = s.FullName()
+		}
+	}
+	schemaID, err := m.Registry.Register(subject, schema)
+	if err != nil {
+		return 0, nil, err
+	}
+	return schemaID, schema, nil
+}

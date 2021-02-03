@@ -1,6 +1,7 @@
 package avroturf_test
 
 import (
+	"bytes"
 	"os"
 	"path"
 	"sync"
@@ -237,5 +238,79 @@ func TestGetRecordSchema(t *testing.T) {
 	}
 	if s.Name() != "TestSchemaRoot" {
 		t.Errorf("expected \"TestSchemaRoot\" but got \"%s\"", s.Name())
+	}
+}
+
+func TestEncode(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	schema, err := avro.Parse(`
+		{
+			"type": "record",
+			"name": "TestSchemaRoot",
+			"fields": [
+				{
+					"type": "string",
+					"name": "str"
+				}
+			]
+		}
+	`)
+	if err != nil {
+		t.Errorf("unexpected err: %v", err)
+	}
+
+	registry := mock_avroturf.NewMockSchemaRegistry(ctrl)
+	registry.EXPECT().Register("TestSchemaRoot-input", schema).Return(uint32(123), nil)
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+	messaging := &avroturf.Messaging{
+		Registry:    registry,
+		NameSpace:   "test-namespace",
+		SchemasByID: make(map[uint32]avro.Schema),
+		SchemaStore: avroturf.NewSchemaStore(path.Join(dir, "testdata")),
+	}
+	obj := record{Str: "hoge"}
+
+	b, err := messaging.Encode(&obj, "TestSchemaRoot-input", "test-name", "test-namespace")
+	if err != nil {
+		t.Errorf("unexpected err: %v", err)
+		return
+	}
+	expected := []byte{0, 0, 0, 0, 123, 8}
+	expected = append(expected, "hoge"...)
+	if bytes.Compare(expected, b) != 0 {
+		t.Errorf("expected %+v but got %+v", expected, b)
+	}
+}
+
+func TestEncodeByLocalSchema(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+	messaging := &avroturf.Messaging{
+		NameSpace:   "test-namespace",
+		SchemasByID: make(map[uint32]avro.Schema),
+		SchemaStore: avroturf.NewSchemaStore(path.Join(dir, "testdata")),
+	}
+	obj := record{Str: "hoge"}
+
+	b, err := messaging.EncodeByLocalSchema(&obj, "test-name", "test-namespace", 123)
+	if err != nil {
+		t.Errorf("unexpected err: %v", err)
+		return
+	}
+	expected := []byte{0, 0, 0, 0, 123, 8}
+	expected = append(expected, "hoge"...)
+	if bytes.Compare(expected, b) != 0 {
+		t.Errorf("expected %+v but got %+v", expected, b)
 	}
 }
