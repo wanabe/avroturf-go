@@ -24,7 +24,7 @@ func NewMessaging(namespace string, path string, registryURL string) *Messaging 
 			Upstream: &ConfluentSchemaRegistry{
 				RegistryURL: registryURL,
 			},
-			Cache: &InMemoryCache{},
+			Cache: NewInMemoryCache(),
 		},
 		SchemasByID: make(map[uint32]avro.Schema),
 	}

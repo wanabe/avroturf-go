@@ -3,24 +3,35 @@ package avroturf
 import "github.com/hamba/avro"
 
 type InMemoryCache struct {
+	SchemasByID             map[uint32]avro.Schema
+	IdsBySchema             map[string]uint32
+	SchemasBySubjectVersion map[string]avro.Schema
 }
 
-func (*InMemoryCache) LookupSchemaByID(schemaID uint32) avro.Schema {
-	// TODO: implement
-	return nil
+func NewInMemoryCache() *InMemoryCache {
+	return &InMemoryCache{
+		SchemasByID:             map[uint32]avro.Schema{},
+		IdsBySchema:             map[string]uint32{},
+		SchemasBySubjectVersion: map[string]avro.Schema{},
+	}
 }
 
-func (*InMemoryCache) StoreSchemaByID(schemaID uint32, schema avro.Schema) avro.Schema {
-	// TODO: implement
+func (c *InMemoryCache) LookupSchemaByID(schemaID uint32) avro.Schema {
+	return c.SchemasByID[schemaID]
+}
+
+func (c *InMemoryCache) StoreSchemaByID(schemaID uint32, schema avro.Schema) avro.Schema {
+	c.SchemasByID[schemaID] = schema
 	return schema
 }
 
-func (*InMemoryCache) LookupBySchema(subject string, schema avro.Schema) uint32 {
-	// TODO: implement
-	return 0
+func (c *InMemoryCache) LookupIdBySchema(subject string, schema avro.Schema) uint32 {
+	key := subject + schema.String()
+	return c.IdsBySchema[key]
 }
 
-func (*InMemoryCache) StoreBySchema(subject string, schema avro.Schema, schemaID uint32) uint32 {
-	// TODO: implement
+func (c *InMemoryCache) StoreIdBySchema(subject string, schema avro.Schema, schemaID uint32) uint32 {
+	key := subject + schema.String()
+	c.IdsBySchema[key] = schemaID
 	return schemaID
 }

@@ -21,7 +21,7 @@ func (r *CachedConfluentSchemaRegistry) FetchSchema(schemaID uint32) (avro.Schem
 }
 
 func (r *CachedConfluentSchemaRegistry) Register(subject string, schema avro.Schema) (uint32, error) {
-	schemaId := r.Cache.LookupBySchema(subject, schema)
+	schemaId := r.Cache.LookupIdBySchema(subject, schema)
 	if schemaId != 0 {
 		return schemaId, nil
 	}
@@ -29,5 +29,5 @@ func (r *CachedConfluentSchemaRegistry) Register(subject string, schema avro.Sch
 	if err != nil {
 		return 0, err
 	}
-	return r.Cache.StoreBySchema(subject, schema, schemaId), nil
+	return r.Cache.StoreIdBySchema(subject, schema, schemaId), nil
 }
