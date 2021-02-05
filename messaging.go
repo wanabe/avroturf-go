@@ -90,7 +90,7 @@ func (m *Messaging) Encode(obj interface{}, subject string, schemaName string, n
 	if err != nil {
 		return nil, err
 	}
-	return encodeBySchemaAndId(obj, schemaID, schema)
+	return EncodeBySchemaAndId(obj, schemaID, schema)
 }
 
 func (m *Messaging) EncodeByLocalSchema(obj interface{}, schemaName string, namespace string, schemaID uint32) ([]byte, error) {
@@ -98,10 +98,10 @@ func (m *Messaging) EncodeByLocalSchema(obj interface{}, schemaName string, name
 	if err != nil {
 		return nil, err
 	}
-	return encodeBySchemaAndId(obj, schemaID, schema)
+	return EncodeBySchemaAndId(obj, schemaID, schema)
 }
 
-func encodeBySchemaAndId(obj interface{}, schemaID uint32, schema avro.Schema) ([]byte, error) {
+func EncodeBySchemaAndId(obj interface{}, schemaID uint32, schema avro.Schema) ([]byte, error) {
 	data, err := avro.Marshal(schema, obj)
 	if err != nil || len(data) == 0 {
 		return nil, err
