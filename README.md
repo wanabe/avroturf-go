@@ -5,4 +5,4 @@ This library is intended to be a very partial port of [AvroTurf](https://github.
 
 ## Usage
 
-Please refer [integration_test.go](./tree/master/integration_test.go).
+Please refer [integration_test.go](./integration_test.go).
