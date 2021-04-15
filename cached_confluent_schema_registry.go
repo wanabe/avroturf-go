@@ -1,13 +1,11 @@
 package avroturf
 
-import "github.com/hamba/avro"
-
 type CachedConfluentSchemaRegistry struct {
 	Upstream *ConfluentSchemaRegistry
 	Cache    *InMemoryCache
 }
 
-func (r *CachedConfluentSchemaRegistry) FetchSchema(schemaID uint32) (avro.Schema, error) {
+func (r *CachedConfluentSchemaRegistry) FetchSchema(schemaID uint32) (*Schema, error) {
 	schema := r.Cache.LookupSchemaByID(schemaID)
 	if schema != nil {
 		return schema, nil
@@ -20,7 +18,7 @@ func (r *CachedConfluentSchemaRegistry) FetchSchema(schemaID uint32) (avro.Schem
 	return r.Cache.StoreSchemaByID(schemaID, schema), nil
 }
 
-func (r *CachedConfluentSchemaRegistry) Register(subject string, schema avro.Schema) (uint32, error) {
+func (r *CachedConfluentSchemaRegistry) Register(subject string, schema *Schema) (uint32, error) {
 	schemaId := r.Cache.LookupIdBySchema(subject, schema)
 	if schemaId != 0 {
 		return schemaId, nil

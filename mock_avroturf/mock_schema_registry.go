@@ -6,7 +6,7 @@ package mock_avroturf
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	avro "github.com/hamba/avro"
+	avroturf "github.com/wanabe/avroturf-go"
 	reflect "reflect"
 )
 
@@ -34,10 +34,10 @@ func (m *MockSchemaRegistry) EXPECT() *MockSchemaRegistryMockRecorder {
 }
 
 // FetchSchema mocks base method
-func (m *MockSchemaRegistry) FetchSchema(arg0 uint32) (avro.Schema, error) {
+func (m *MockSchemaRegistry) FetchSchema(arg0 uint32) (*avroturf.Schema, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchSchema", arg0)
-	ret0, _ := ret[0].(avro.Schema)
+	ret0, _ := ret[0].(*avroturf.Schema)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -49,7 +49,7 @@ func (mr *MockSchemaRegistryMockRecorder) FetchSchema(arg0 interface{}) *gomock.
 }
 
 // Register mocks base method
-func (m *MockSchemaRegistry) Register(arg0 string, arg1 avro.Schema) (uint32, error) {
+func (m *MockSchemaRegistry) Register(arg0 string, arg1 *avroturf.Schema) (uint32, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", arg0, arg1)
 	ret0, _ := ret[0].(uint32)

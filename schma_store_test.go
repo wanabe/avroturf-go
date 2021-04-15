@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hamba/avro"
 	"github.com/rakyll/statik/fs"
 
 	"github.com/wanabe/avroturf-go"
@@ -13,7 +12,7 @@ import (
 )
 
 func TestFind(t *testing.T) {
-	s, err := avro.Parse(`
+	s, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestSchema",

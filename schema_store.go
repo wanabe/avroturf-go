@@ -6,25 +6,23 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-
-	"github.com/hamba/avro"
 )
 
 type SchemaStore struct {
 	sync.Mutex
 	Path    string
 	FS      http.FileSystem
-	schemas map[string]avro.Schema
+	schemas map[string]*Schema
 }
 
 func NewSchemaStore(path string) *SchemaStore {
 	return &SchemaStore{
 		Path:    path,
-		schemas: map[string]avro.Schema{},
+		schemas: map[string]*Schema{},
 	}
 }
 
-func (store *SchemaStore) Find(schemaName string, namespace string) (avro.Schema, error) {
+func (store *SchemaStore) Find(schemaName string, namespace string) (*Schema, error) {
 	fullName := schemaName
 	if namespace != "" {
 		fullName = namespace + "." + schemaName
@@ -42,7 +40,7 @@ func (store *SchemaStore) Find(schemaName string, namespace string) (avro.Schema
 	return store.loadSchema(fullName)
 }
 
-func (store *SchemaStore) loadSchema(fullName string) (avro.Schema, error) {
+func (store *SchemaStore) loadSchema(fullName string) (*Schema, error) {
 	slicedPath := append([]string{store.Path}, strings.Split(fullName, ".")...)
 	slicedPath[len(slicedPath)-1] = slicedPath[len(slicedPath)-1] + ".avsc"
 	avsc, err := store.readFile(filepath.Join(slicedPath...))
@@ -50,7 +48,7 @@ func (store *SchemaStore) loadSchema(fullName string) (avro.Schema, error) {
 		return nil, err
 	}
 
-	schema, err := avro.Parse(string(avsc))
+	schema, err := Parse(string(avsc))
 	if err != nil {
 		return nil, err
 	}

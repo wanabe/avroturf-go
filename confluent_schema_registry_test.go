@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hamba/avro"
 	"github.com/wanabe/avroturf-go"
 )
 
@@ -53,7 +52,7 @@ func TestFetchSchema(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	expectedSchema, err := avro.Parse(`
+	expectedSchema, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestRecord",
@@ -83,7 +82,7 @@ func TestRegister(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if expected := `{"schema":"{\"name\":\"TestRecord\",\"type\":\"record\",\"fields\":[{\"name\":\"Str1\",\"type\":\"string\"}]}"}`; string(reqBytes) != expected {
+			if expected := `{"schema":"{\"fields\":[{\"name\":\"Str1\",\"type\":\"string\"}],\"name\":\"TestRecord\",\"type\":\"record\"}"}`; string(reqBytes) != expected {
 				t.Errorf("expected:\n  %#v but got:\n  %#v", expected, string(reqBytes))
 			}
 
@@ -98,7 +97,7 @@ func TestRegister(t *testing.T) {
 	r := &avroturf.ConfluentSchemaRegistry{
 		RegistryURL: "http://schema-registry:8081",
 	}
-	schema, err := avro.Parse(`
+	schema, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestRecord",

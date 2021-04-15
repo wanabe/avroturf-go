@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hamba/avro"
 	"github.com/wanabe/avroturf-go"
 )
 
@@ -15,7 +14,7 @@ func TestLookupSchemaByID(t *testing.T) {
 		t.Errorf("expected nil but got %v", schema)
 	}
 
-	s, err := avro.Parse(`
+	s, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestSchema",
@@ -31,7 +30,7 @@ func TestLookupSchemaByID(t *testing.T) {
 		t.Error(err)
 	}
 	c = &avroturf.InMemoryCache{
-		SchemasByID: map[uint32]avro.Schema{135: s},
+		SchemasByID: map[uint32]*avroturf.Schema{135: s},
 	}
 	schema = c.LookupSchemaByID(135)
 	if !reflect.DeepEqual(s, schema) {
@@ -44,8 +43,8 @@ func TestLookupSchemaByID(t *testing.T) {
 }
 
 func TestStoreSchemaByID(t *testing.T) {
-	c := &avroturf.InMemoryCache{SchemasByID: map[uint32]avro.Schema{}}
-	s, err := avro.Parse(`
+	c := &avroturf.InMemoryCache{SchemasByID: map[uint32]*avroturf.Schema{}}
+	s, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestSchema",
@@ -65,7 +64,7 @@ func TestStoreSchemaByID(t *testing.T) {
 		t.Errorf("expected %v but got %v", s, schema)
 	}
 
-	expectedSchemasByID := map[uint32]avro.Schema{135: s}
+	expectedSchemasByID := map[uint32]*avroturf.Schema{135: s}
 	if !reflect.DeepEqual(expectedSchemasByID, c.SchemasByID) {
 		t.Errorf("expected %v but got %v", expectedSchemasByID, c.SchemasByID)
 
@@ -85,11 +84,11 @@ func TestLookupIdBySchema(t *testing.T) {
 			]
 		}
 	`
-	s1, err := avro.Parse(schemaStr)
+	s1, err := avroturf.Parse(schemaStr)
 	if err != nil {
 		t.Error(err)
 	}
-	s2, err := avro.Parse(schemaStr)
+	s2, err := avroturf.Parse(schemaStr)
 	if err != nil {
 		t.Error(err)
 	}

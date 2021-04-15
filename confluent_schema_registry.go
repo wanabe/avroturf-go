@@ -12,8 +12,6 @@ import (
 	"path"
 	"reflect"
 	"strings"
-
-	"github.com/hamba/avro"
 )
 
 type ConfluentSchemaRegistry struct {
@@ -33,7 +31,7 @@ func init() {
 	HTTPClient = &http.Client{}
 }
 
-func (r *ConfluentSchemaRegistry) FetchSchema(schemaID uint32) (avro.Schema, error) {
+func (r *ConfluentSchemaRegistry) FetchSchema(schemaID uint32) (*Schema, error) {
 	if Logger != nil {
 		Logger.Printf("Fetching schema with id %d\n", schemaID)
 	}
@@ -45,10 +43,10 @@ func (r *ConfluentSchemaRegistry) FetchSchema(schemaID uint32) (avro.Schema, err
 	if !ok {
 		return nil, errors.New("unexpected schema-registry response")
 	}
-	return avro.Parse(json)
+	return Parse(json)
 }
 
-func (r *ConfluentSchemaRegistry) Register(subject string, schema avro.Schema) (uint32, error) {
+func (r *ConfluentSchemaRegistry) Register(subject string, schema *Schema) (uint32, error) {
 	builder := &strings.Builder{}
 	err := json.NewEncoder(builder).Encode(map[string]string{"schema": schema.String()})
 	if err != nil {

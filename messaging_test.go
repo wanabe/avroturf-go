@@ -9,7 +9,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/hamba/avro"
 	"github.com/wanabe/avroturf-go"
 	"github.com/wanabe/avroturf-go/mock_avroturf"
 )
@@ -42,7 +41,7 @@ func TestDecode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	schema, err := avro.Parse(`
+	schema, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestSchemaRoot",
@@ -61,7 +60,7 @@ func TestDecode(t *testing.T) {
 	registry := mock_avroturf.NewMockSchemaRegistry(ctrl)
 	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
 
-	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
+	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]*avroturf.Schema)}
 	obj := record{}
 	b := []byte{0, 0, 0, 0, 123, 8}
 	b = append(b, "hoge"...)
@@ -123,7 +122,7 @@ func TestGetSchema(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	schema, err := avro.Parse(`
+	schema, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestSchemaRoot",
@@ -142,7 +141,7 @@ func TestGetSchema(t *testing.T) {
 	registry := mock_avroturf.NewMockSchemaRegistry(ctrl)
 	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
 
-	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
+	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]*avroturf.Schema)}
 	b := []byte{0, 0, 0, 0, 123, 8}
 	b = append(b, "hoge"...)
 
@@ -160,7 +159,7 @@ func TestGetSchemaIOnParallel(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	schema, err := avro.Parse(`
+	schema, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestSchemaRoot",
@@ -179,7 +178,7 @@ func TestGetSchemaIOnParallel(t *testing.T) {
 	registry := mock_avroturf.NewMockSchemaRegistry(ctrl)
 	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
 
-	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
+	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]*avroturf.Schema)}
 	b := []byte{0, 0, 0, 0, 123, 8}
 	b = append(b, "hoge"...)
 
@@ -205,7 +204,7 @@ func TestGetRecordSchema(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	schema, err := avro.Parse(`
+	schema, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestSchemaRoot",
@@ -224,7 +223,7 @@ func TestGetRecordSchema(t *testing.T) {
 	registry := mock_avroturf.NewMockSchemaRegistry(ctrl)
 	registry.EXPECT().FetchSchema(uint32(123)).Return(schema, nil)
 
-	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]avro.Schema)}
+	messaging := &avroturf.Messaging{Registry: registry, NameSpace: "test-namespace", SchemasByID: make(map[uint32]*avroturf.Schema)}
 	b := []byte{0, 0, 0, 0, 123, 8}
 	b = append(b, "hoge"...)
 
@@ -233,7 +232,7 @@ func TestGetRecordSchema(t *testing.T) {
 		t.Errorf("unexpected err: %v", err)
 		return
 	}
-	if s != schema {
+	if s != schema.Schema {
 		t.Errorf("expected %v but got %v", schema, s)
 	}
 	if s.Name() != "TestSchemaRoot" {
@@ -245,7 +244,7 @@ func TestEncode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	schema, err := avro.Parse(`
+	schema, err := avroturf.Parse(`
 		{
 			"type": "record",
 			"name": "TestSchemaRoot",
@@ -271,7 +270,7 @@ func TestEncode(t *testing.T) {
 	messaging := &avroturf.Messaging{
 		Registry:    registry,
 		NameSpace:   "test-namespace",
-		SchemasByID: make(map[uint32]avro.Schema),
+		SchemasByID: make(map[uint32]*avroturf.Schema),
 		SchemaStore: avroturf.NewSchemaStore(path.Join(dir, "testdata")),
 	}
 	obj := record{Str: "hoge"}
@@ -298,7 +297,7 @@ func TestEncodeByLocalSchema(t *testing.T) {
 	}
 	messaging := &avroturf.Messaging{
 		NameSpace:   "test-namespace",
-		SchemasByID: make(map[uint32]avro.Schema),
+		SchemasByID: make(map[uint32]*avroturf.Schema),
 		SchemaStore: avroturf.NewSchemaStore(path.Join(dir, "testdata")),
 	}
 	obj := record{Str: "hoge"}

@@ -13,7 +13,7 @@ type Messaging struct {
 	NameSpace   string
 	SchemaStore *SchemaStore
 	Registry    SchemaRegistry
-	SchemasByID map[uint32]avro.Schema
+	SchemasByID map[uint32]*Schema
 }
 
 func NewMessaging(namespace string, path string, registryURL string) *Messaging {
@@ -26,11 +26,11 @@ func NewMessaging(namespace string, path string, registryURL string) *Messaging 
 			},
 			Cache: NewInMemoryCache(),
 		},
-		SchemasByID: make(map[uint32]avro.Schema),
+		SchemasByID: make(map[uint32]*Schema),
 	}
 }
 
-func (m *Messaging) GetSchema(data []byte) (avro.Schema, error) {
+func (m *Messaging) GetSchema(data []byte) (*Schema, error) {
 	if len(data) < 5 {
 		return nil, fmt.Errorf("data too short: %d byte(s)", len(data))
 	}
@@ -62,7 +62,7 @@ func (m *Messaging) Decode(data []byte, obj interface{}) error {
 	if err != nil {
 		return err
 	}
-	return avro.Unmarshal(writersSchema, data[5:], obj)
+	return avro.Unmarshal(writersSchema.Schema, data[5:], obj)
 }
 
 func (m *Messaging) DecodeByLocalSchema(data []byte, obj interface{}, schemaName string, namespace string) error {
@@ -70,7 +70,7 @@ func (m *Messaging) DecodeByLocalSchema(data []byte, obj interface{}, schemaName
 	if err != nil {
 		return err
 	}
-	return avro.Unmarshal(localSchema, data[5:], obj)
+	return avro.Unmarshal(localSchema.Schema, data[5:], obj)
 }
 
 func (m *Messaging) GetRecordSchema(data []byte) (*avro.RecordSchema, error) {
@@ -78,7 +78,7 @@ func (m *Messaging) GetRecordSchema(data []byte) (*avro.RecordSchema, error) {
 	if err != nil {
 		return nil, err
 	}
-	recordSchema, ok := schema.(*avro.RecordSchema)
+	recordSchema, ok := schema.Schema.(*avro.RecordSchema)
 	if !ok {
 		return nil, fmt.Errorf("invalid schema: %+v", schema)
 	}
@@ -101,8 +101,8 @@ func (m *Messaging) EncodeByLocalSchema(obj interface{}, schemaName string, name
 	return EncodeBySchemaAndId(obj, schemaID, schema)
 }
 
-func EncodeBySchemaAndId(obj interface{}, schemaID uint32, schema avro.Schema) ([]byte, error) {
-	data, err := avro.Marshal(schema, obj)
+func EncodeBySchemaAndId(obj interface{}, schemaID uint32, schema *Schema) ([]byte, error) {
+	data, err := avro.Marshal(schema.Schema, obj)
 	if err != nil || len(data) == 0 {
 		return nil, err
 	}
@@ -111,13 +111,13 @@ func EncodeBySchemaAndId(obj interface{}, schemaID uint32, schema avro.Schema) (
 	return data, nil
 }
 
-func (m *Messaging) RegisterSchema(subject string, schemaName string, namespace string) (uint32, avro.Schema, error) {
+func (m *Messaging) RegisterSchema(subject string, schemaName string, namespace string) (uint32, *Schema, error) {
 	schema, err := m.SchemaStore.Find(schemaName, namespace)
 	if err != nil {
 		return 0, nil, err
 	}
 	if subject == "" {
-		s, ok := schema.(avro.NamedSchema)
+		s, ok := schema.Schema.(avro.NamedSchema)
 		if ok {
 			subject = s.FullName()
 		}
